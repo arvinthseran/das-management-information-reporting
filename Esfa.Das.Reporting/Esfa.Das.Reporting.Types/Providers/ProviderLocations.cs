@@ -20,11 +20,13 @@ namespace Esfa.Das.Reporting.Types
 
     public class Apprenticeship
     {
-        public string Id { get; set; }
+        public string ApprenticeshipId { get; set; }
+
+        public string ApprenticeshipName { get; set; }
 
         public ApprenticeshipType ApprenticeshipType { get; set; }
 
-        public List<long> TrainingLocationsId { get; set; }
+        public List<ApprenticeshipTrainingLocation> ApprenticeshipTrainingLocations { get; set; }
     }
 
     public enum ApprenticeshipType
@@ -32,7 +34,15 @@ namespace Esfa.Das.Reporting.Types
         Framework,
         Standard
     }
-    
+
+    public class ApprenticeshipTrainingLocation
+    {
+        public int LocationId { get; set; }
+
+        public List<string> DeliveryModes { get; set; }
+        
+    }
+
     public class TrainingLocation
     {
         public int LocationId { get; set; }
