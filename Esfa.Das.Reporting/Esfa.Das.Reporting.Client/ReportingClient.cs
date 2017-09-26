@@ -25,5 +25,10 @@ namespace Esfa.Das.Reporting.Client
         {
             return FindAllProvidersLocations(GetAllMainProviders().ToList().Select(x => int.Parse(x.Ukprn.ToString())).ToList());
         }
+
+        public new void DownloadProviderDetails(List<int> providerUkprns)
+        {
+            base.DownloadProviderDetails(providerUkprns);
+        }
     }
 }

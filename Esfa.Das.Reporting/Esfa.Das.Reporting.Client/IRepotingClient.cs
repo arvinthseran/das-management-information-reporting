@@ -15,5 +15,7 @@ namespace Esfa.Das.Reporting.Client
         IEnumerable<ProviderSummary> GetAllMainProviders();
 
         IEnumerable<ProviderLocations> GetAllMainProviderLocations();
+
+        void DownloadProviderDetails(List<int> providerUkprns);
     }
 }
