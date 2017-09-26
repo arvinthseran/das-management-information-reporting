@@ -32,12 +32,23 @@ namespace Esfa.Das.Reporting.UnitTests
             List<string> message = new List<string>();
             message.Add($"No of Main Providers : {mainproviders.Count} ");
             message.Add($"No of Main Providers with data : {providerlocations.Count} ");
-            message.Add($"No of Main Providers with no data in CD : {providersWithNoData.Count}, example {providersWithNoData.FirstOrDefault()} ");
-            message.Add($"No of Training Locations : {providerlocations.Select(x=> x.TrainingLocations.Count()).Sum()} ");
-            message.Add($"No of Frameworks Offered by providers : {providerlocations.Select(x => x.Frameworks.Count()).Sum()} ");
-            message.Add($"No of Standards Offered by providers : {providerlocations.Select(x => x.Standards.Count()).Sum()} ");
-            
+            message.Add($"No of Main Providers with no data in CD : {providersWithNoData.Count}, example {string.Join(", ", providersWithNoData.Take(5))} ");
+            message.Add($"No of Main Provider Training Locations  : {providerlocations.Select(x => x.TrainingLocations.Count()).Sum()} ");
+            var frameworklocations = providerlocations.SelectMany(x => x.Frameworks.SelectMany(y => y.ApprenticeshipTrainingLocations).Where(z => z.DeliveryModes.All(a => a != "100PercentEmployer"))).ToList();
+            var standardlocations = providerlocations.SelectMany(x => x.Standards.SelectMany(y => y.ApprenticeshipTrainingLocations).Where(z => z.DeliveryModes.All(a => a != "100PercentEmployer"))).ToList();
+            var g = frameworklocations.Where(x => x.DeliveryModes.Count() > 1).ToList();
+            var h = standardlocations.Where(x => x.DeliveryModes.Count() > 1).ToList();
+            message.Add($"No of Frameworks and Standards Training Locations offering Day Release or Block Release: {frameworklocations.Count() + standardlocations.Count()} ");
+            message.Add($"No of Frameworks offered by Main providers : {providerlocations.Select(x => x.Frameworks.Count()).Sum()} ");
+            message.Add($"No of Standards offered by Main providers : {providerlocations.Select(x => x.Standards.Count()).Sum()} ");
+
             Console.WriteLine(string.Join(Environment.NewLine, message));
+        }
+
+        [Test]
+        public void ShouldDownloadMainProvidersDetails()
+        {
+            _reportingClient.DownloadProviderDetails(new List<int> { 10004632, 10004663, 10004721, 10038566 });
         }
     }
 }
