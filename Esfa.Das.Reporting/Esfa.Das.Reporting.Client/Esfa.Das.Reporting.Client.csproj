@@ -60,9 +60,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IRepotingClient.cs" />
+    <Compile Include="ApprenticeshipStandardReportingClient.cs" />
+    <Compile Include="IReportingClient.cs" />
     <Compile Include="ReportingClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ProviderReportingClient.cs" />
     <Compile Include="ReportingClientBase.cs" />
   </ItemGroup>
   <ItemGroup>

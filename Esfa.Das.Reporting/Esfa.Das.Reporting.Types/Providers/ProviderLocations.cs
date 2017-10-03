@@ -1,9 +1,6 @@
-﻿using SFA.DAS.Apprenticeships.Api.Types;
-using System;
+﻿
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace Esfa.Das.Reporting.Types
 {
@@ -13,12 +10,12 @@ namespace Esfa.Das.Reporting.Types
 
         public List<TrainingLocation> TrainingLocations { get; set; }
 
-        public List<Apprenticeship> Frameworks { get; set; }
+        public List<ProviderApprenticeship> Frameworks { get; set; }
 
-        public List<Apprenticeship> Standards { get; set; }
+        public List<ProviderApprenticeship> Standards { get; set; }
     }
 
-    public class Apprenticeship
+    public class ProviderApprenticeship
     {
         public string ApprenticeshipId { get; set; }
 
