@@ -38,7 +38,17 @@ namespace Esfa.Das.Reporting.Client
                     }
                 }
             }
+        }
 
+        public IEnumerable<int> ProvidersUkprnsFromCD()
+        {
+            List<long> providersUkprns = new List<long>();
+            dynamic providers = GetProvidersFromCourseDirectory();
+            foreach (var provider in providers)
+            {
+                providersUkprns.Add(provider.ukprn.Value);
+            }
+            return providersUkprns.Select(x => (int)x);
         }
 
         public IEnumerable<ProviderLocations> FindAllProvidersLocations(List<int> providerUkprns)

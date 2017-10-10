@@ -36,5 +36,10 @@ namespace Esfa.Das.Reporting.Client
         {
             return _apprenticeshipStandardReportingClient.GetAllApprenticeshipStandards();
         }
+
+        public IEnumerable<int> GetProvidersUkprnsFromCD()
+        {
+            return _providerReportingClient.ProvidersUkprnsFromCD();
+        }
     }
 }

@@ -48,7 +48,15 @@ namespace Esfa.Das.Reporting.UnitTests
         [Test]
         public void ShouldDownloadMainProvidersDetails()
         {
-            _reportingClient.DownloadProviderDetails(new List<int> { 10004632, 10004663, 10004721, 10038566 });
+            try
+            {
+                _reportingClient.DownloadProviderDetails(new List<int> { 10004632, 10004663, 10004721, 10038566 });
+            }
+            catch
+            {
+                Assert.Fail("Could not download providers from Cd");
+            }
+            
         }
 
         [Test]
@@ -56,6 +64,14 @@ namespace Esfa.Das.Reporting.UnitTests
         {
             var message = _reportingClient.GetAllApprenticeshipStandards().Where(x => string.IsNullOrEmpty(x.OverviewOfRole)).Select(y => $"{y.Id} with title {y.Title} has an empty overview {y.OverviewOfRole}");
             Assert.AreEqual(0,message.Count(), string.Join(Environment.NewLine, message));
+        }
+
+        [Test]
+        public void ShouldGetAProviderfromCD()
+        {
+            int providerundertest = 10000415;
+            var providerfromCd = _reportingClient.GetProvidersUkprnsFromCD();
+            Assert.IsTrue(providerfromCd.Contains(providerundertest), $"Course Directory does not have {providerundertest} provider details");
         }
     }
 }
