@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using SFA.DAS.Apprenticeships.Api.Client;
 using SFA.DAS.Providers.Api.Client;
+using SFA.DAS.AssessmentOrgs.Api.Client;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
@@ -14,6 +15,7 @@ namespace Esfa.Das.Reporting.Client
         protected ProviderApiClient _providerApiClient;
         protected FrameworkApiClient _frameworkApiClient;
         protected StandardApiClient _standardApiClient;
+        protected AssessmentOrgsApiClient _assessmentOrgsApiClient;
 
         protected ReportingClientBase(string appUri = null, string cdUri = null)
         {
@@ -22,6 +24,7 @@ namespace Esfa.Das.Reporting.Client
             _providerApiClient = new ProviderApiClient(apprenticeshipServiceUri);
             _frameworkApiClient = new FrameworkApiClient(apprenticeshipServiceUri);
             _standardApiClient = new StandardApiClient(apprenticeshipServiceUri);
+            _assessmentOrgsApiClient = new AssessmentOrgsApiClient(apprenticeshipServiceUri);
         }
 
         protected readonly JsonSerializerSettings _jsonSettings = new JsonSerializerSettings
