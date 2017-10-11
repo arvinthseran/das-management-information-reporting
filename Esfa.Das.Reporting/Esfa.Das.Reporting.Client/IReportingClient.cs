@@ -20,5 +20,7 @@ namespace Esfa.Das.Reporting.Client
         void DownloadProviderDetails(List<int> providerUkprns);
 
         IEnumerable<ApprenticeshipStandard> GetAllApprenticeshipStandards();
+
+        IEnumerable<ApprenticeshipFramework> GetAllApprenticeshipFrameworks();
     }
 }

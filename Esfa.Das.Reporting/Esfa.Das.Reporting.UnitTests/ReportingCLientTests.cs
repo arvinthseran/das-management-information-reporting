@@ -50,7 +50,7 @@ namespace Esfa.Das.Reporting.UnitTests
         {
             try
             {
-                _reportingClient.DownloadProviderDetails(new List<int> { 10004632, 10004663, 10004721, 10038566 });
+                _reportingClient.DownloadProviderDetails(new List<int> { 10000415 });
             }
             catch
             {
@@ -65,6 +65,25 @@ namespace Esfa.Das.Reporting.UnitTests
             var message = _reportingClient.GetAllApprenticeshipStandards().Where(x => string.IsNullOrEmpty(x.OverviewOfRole)).Select(y => $"{y.Id} with title {y.Title} has an empty overview {y.OverviewOfRole}");
             Assert.AreEqual(0,message.Count(), string.Join(Environment.NewLine, message));
         }
+
+        [Test]
+        public void ShouldNothave0durationFramework()
+        {
+            var frameworks = _reportingClient.GetAllApprenticeshipFrameworks();
+
+            Assert.AreEqual(0, frameworks.Where(x => x.Duration == 0), string.Join(Environment.NewLine, frameworks.Where(x => x.Duration == 0).Select(y => $"{y.Id}")));
+
+
+        }
+
+        [Test]
+        public void ShouldGetApprenticeshipStandardsTitle()
+        {
+            var message = _reportingClient.GetAllApprenticeshipStandards().Select(y => $"{y.Title}");
+
+            Console.WriteLine(string.Join(Environment.NewLine, message));
+        }
+
 
         [Test]
         public void ShouldGetAProviderfromCD()

@@ -22,5 +22,10 @@ namespace Esfa.Das.Reporting.Client
             }
             return appStandards;
         }
+
+        public IEnumerable<ApprenticeshipFramework> GetAllApprenticeshipFrameworks()
+        {
+            return _frameworkApiClient.FindAll().Select(x => new ApprenticeshipFramework {Id = x.Id, Title = x.Title, Duration = x.Duration });
+        }
     }
 }

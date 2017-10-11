@@ -14,4 +14,12 @@ namespace Esfa.Das.Reporting.Types.Apprenticeship
 
         public string OverviewOfRole { get; set; }
     }
+    public class ApprenticeshipFramework
+    {
+        public string Id { get; set; }
+
+        public string Title { get; set; }
+
+        public int Duration { get; set; }
+    }
 }
