@@ -50,7 +50,7 @@ namespace Esfa.Das.Reporting.UnitTests
         {
             try
             {
-                _reportingClient.DownloadProviderDetails(new List<int> { 10000415 });
+                _reportingClient.DownloadProviderDetails(new List<int> { 10002899, 10005967 });
             }
             catch
             {
@@ -67,12 +67,18 @@ namespace Esfa.Das.Reporting.UnitTests
         }
 
         [Test]
+        public void ProviderShouldHaveValidOverallEffectiveness()
+        {
+            var message = _reportingClient.GetAllMainProviderLocations().Where(x => x.OverallEffectiveness == null).Select(y => $"{y.Name}({y.Ukprn}) has no ofsted rating");
+            Assert.AreEqual(0, message.Count(), string.Join(Environment.NewLine, message));
+        }
+
+        [Test]
         public void ShouldNothave0durationFramework()
         {
             var frameworks = _reportingClient.GetAllApprenticeshipFrameworks();
 
             Assert.AreEqual(0, frameworks.Where(x => x.Duration == 0), string.Join(Environment.NewLine, frameworks.Where(x => x.Duration == 0).Select(y => $"{y.Id}")));
-
 
         }
 
@@ -88,9 +94,16 @@ namespace Esfa.Das.Reporting.UnitTests
         [Test]
         public void ShouldGetAProviderfromCD()
         {
-            int providerundertest = 10000415;
+            List<int> providerundertest = new List<int> { 10004599, 10012467 };
             var providerfromCd = _reportingClient.GetProvidersUkprnsFromCD();
-            Assert.IsTrue(providerfromCd.Contains(providerundertest), $"Course Directory does not have {providerundertest} provider details");
+
+            Assert.Multiple(() => 
+            {
+                foreach(int provider in providerundertest)
+                {
+                    Assert.IsTrue(providerfromCd.Contains(provider), $"Course Directory does not have {provider} provider details");
+                }
+            });
         }
     }
 }

@@ -6,7 +6,7 @@ using System.Text;
 using System.Net;
 using System.IO;
 using Esfa.Das.Reporting.Types;
-
+using SFA.DAS.Apprenticeships.Api.Types.Providers;
 
 namespace Esfa.Das.Reporting.Client
 {
@@ -15,6 +15,7 @@ namespace Esfa.Das.Reporting.Client
     {
         private IEnumerable<SFA.DAS.Apprenticeships.Api.Types.FrameworkSummary> _frameworksfromApi;
         private IEnumerable<SFA.DAS.Apprenticeships.Api.Types.StandardSummary> _standardsfromApi;
+        private IEnumerable<Ofsted.Inspection.Types.InspectionOutcome> _inspectionOutcomes;
 
         public ProviderReportingClient(string apprenticeshipServiceUri = null, string courceDirectoryUri = null) : base(apprenticeshipServiceUri, courceDirectoryUri)
         {
@@ -58,6 +59,8 @@ namespace Esfa.Das.Reporting.Client
             dynamic providers = GetProvidersFromCourseDirectory();
             _frameworksfromApi = _frameworkApiClient.FindAll();
             _standardsfromApi = _standardApiClient.FindAll();
+            _inspectionOutcomes = _inspectionOutcomeClient.GetOfstedInspectionOutcomes().InspectionOutcomes;
+            var providersfromApi = _providerApiClient.FindAll().ToList();
 
             foreach (var provider in providers)
             {
@@ -65,7 +68,13 @@ namespace Esfa.Das.Reporting.Client
                 {
                     if (provider.ukprn == ukprn)
                     {
-                        var providerlocation = new ProviderLocations { Ukprn = ukprn, TrainingLocations = new List<TrainingLocation>(), Frameworks = new List<ProviderApprenticeship>(), Standards = new List<ProviderApprenticeship>() };
+                        var providerlocation = new ProviderLocations
+                        {
+                            Ukprn = ukprn, TrainingLocations = new List<TrainingLocation>(), Frameworks = new List<ProviderApprenticeship>(), Standards = new List<ProviderApprenticeship>()
+                        };
+
+                        //Add Provider name
+                        AddProviderName(providersfromApi, providerlocation);
 
                         //Add Provider locations 
                         AddTrainingLocations(provider.locations, providerlocation.TrainingLocations);
@@ -76,14 +85,28 @@ namespace Esfa.Das.Reporting.Client
                         //Add standard offered by provider
                         AddStandards(provider.standards, providerlocation.Standards);
 
+                        //Add OverallEffectiveness report by Ofsted
+                        AddOverallEffectiveness(providerlocation);
+
                         //Add a provider to the list of providers
                         providerlocations.Add(providerlocation);
                     }
                 }
             }
-            return Verifyproviders(providerlocations);
+            return Verifyproviders(providersfromApi,providerlocations);
         }
-        
+
+        private void AddProviderName(List<ProviderSummary> providersfromApi, ProviderLocations providerlocation)
+        {
+            providerlocation.Name = providersfromApi.Single(x => x.Ukprn == providerlocation.Ukprn).ProviderName;
+        }
+
+        private void AddOverallEffectiveness(ProviderLocations providerlocation)
+        {
+            var inspectionOutcome = _inspectionOutcomes.FirstOrDefault(x => x.Ukprn == providerlocation.Ukprn);
+            providerlocation.OverallEffectiveness = inspectionOutcome?.OverallEffectiveness;
+        }
+
         private void AddTrainingLocations(dynamic locations, List<TrainingLocation> providerlocations)
         {
             //Get Provider's locations 
@@ -181,25 +204,25 @@ namespace Esfa.Das.Reporting.Client
             return JsonConvert.DeserializeObject(content, _jsonSettings);
         }
 
-        private IEnumerable<ProviderLocations> Verifyproviders(List<ProviderLocations> providerlocations)
+        private IEnumerable<ProviderLocations> Verifyproviders(List<SFA.DAS.Apprenticeships.Api.Types.Providers.ProviderSummary> providers, List<ProviderLocations> providerlocations)
         {
             // to verify
-            var providers = _providerApiClient.FindAll().Select(x => int.Parse(x.Ukprn.ToString())).ToList();
-            var frameworks = _frameworkApiClient.FindAll().Select(x => x.Id);
-            var standards = _standardApiClient.FindAll().Select(x => x.Id);
+            var providersukprnfromApi = providers.Select(x => int.Parse(x.Ukprn.ToString())).ToList();
+            var frameworksidsfromApi = _frameworkApiClient.FindAll().Select(x => x.Id);
+            var standardsidsfromApi = _standardApiClient.FindAll().Select(x => x.Id);
 
             var providersukprn = providerlocations.Select(x => x.Ukprn).Distinct();
             var providersFrameworks = providerlocations.SelectMany(x => x.Frameworks.Select(y => y.ApprenticeshipId)).Distinct();
             var providersStandards = providerlocations.SelectMany(x => x.Standards.Select(y => y.ApprenticeshipId)).Distinct();
 
-            var inactiveProviders = providersukprn.Except(providers).ToList();
-            var inactiveFrameworks = providersFrameworks.Except(frameworks).ToList();
-            var inactiveStandards = providersStandards.Except(standards).ToList();
+            var inactiveProviders = providersukprn.Except(providersukprnfromApi).ToList();
+            var inactiveFrameworks = providersFrameworks.Except(frameworksidsfromApi).ToList();
+            var inactiveStandards = providersStandards.Except(standardsidsfromApi).ToList();
 
             if (inactiveProviders.Count() != 0 && inactiveFrameworks.Count() != 0 && inactiveStandards.Count()!= 0)
             {
                 var inactiveItems = inactiveProviders.Select(x => x.ToString()).Concat(inactiveFrameworks.Concat(inactiveStandards));
-                Console.WriteLine($"There are some inactive item on the providers location list {Environment.NewLine}{string.Join(Environment.NewLine, inactiveItems)}");
+                Console.WriteLine($"{Environment.NewLine}There are some inactive item on the providers location list {Environment.NewLine}{string.Join(Environment.NewLine, inactiveItems)}");
             }
 
             return providerlocations;

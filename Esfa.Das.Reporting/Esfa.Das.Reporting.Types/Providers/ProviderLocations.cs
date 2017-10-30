@@ -1,4 +1,5 @@
 ﻿
+using Esfa.Ofsted.Inspection.Types;
 using System.Collections.Generic;
 
 
@@ -8,11 +9,15 @@ namespace Esfa.Das.Reporting.Types
     {
         public int Ukprn { get; set; }
 
+        public string Name { get; set; }
+
         public List<TrainingLocation> TrainingLocations { get; set; }
 
         public List<ProviderApprenticeship> Frameworks { get; set; }
 
         public List<ProviderApprenticeship> Standards { get; set; }
+
+        public OverallEffectiveness? OverallEffectiveness;
     }
 
     public class ProviderApprenticeship

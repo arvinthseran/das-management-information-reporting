@@ -4,6 +4,7 @@ using SFA.DAS.Providers.Api.Client;
 using SFA.DAS.AssessmentOrgs.Api.Client;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using Esfa.Ofsted.Inspection.Client;
 
 namespace Esfa.Das.Reporting.Client
 {
@@ -16,6 +17,7 @@ namespace Esfa.Das.Reporting.Client
         protected FrameworkApiClient _frameworkApiClient;
         protected StandardApiClient _standardApiClient;
         protected AssessmentOrgsApiClient _assessmentOrgsApiClient;
+        protected OfstedInspectionsClient _inspectionOutcomeClient;
 
         protected ReportingClientBase(string appUri = null, string cdUri = null)
         {
@@ -25,6 +27,7 @@ namespace Esfa.Das.Reporting.Client
             _frameworkApiClient = new FrameworkApiClient(apprenticeshipServiceUri);
             _standardApiClient = new StandardApiClient(apprenticeshipServiceUri);
             _assessmentOrgsApiClient = new AssessmentOrgsApiClient(apprenticeshipServiceUri);
+            _inspectionOutcomeClient = new OfstedInspectionsClient();
         }
 
         protected readonly JsonSerializerSettings _jsonSettings = new JsonSerializerSettings
