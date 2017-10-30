@@ -20,7 +20,10 @@ namespace Esfa.Das.Reporting.UnitTests
         public void TestSetup()
         {
             // api client defaults to production uri.
-            _reportingClient = new ReportingClient("http://das-prd-apprenticeshipinfoservice.cloudapp.net/", "https://dasapi.coursedirectoryproviderportal.org.uk/dasapi/bulk/providers");
+            _reportingClient = new ReportingClient
+                ("http://das-prd-apprenticeshipinfoservice.cloudapp.net/", 
+                 "https://dasapi.coursedirectoryproviderportal.org.uk/dasapi/bulk/providers", 
+                 "https://roatp.apprenticeships.sfa.bis.gov.uk/api");
         }
 
         [Test]
@@ -104,6 +107,38 @@ namespace Esfa.Das.Reporting.UnitTests
                     Assert.IsTrue(providerfromCd.Contains(provider), $"Course Directory does not have {provider} provider details");
                 }
             });
+        }
+
+        [Test]
+        public void ShouldBeinFcsList()
+        {
+            var path = @"C:\SFA\SFA-DAS-MetaDataStorage\fcs\preprod";
+            var activefcsfile = "fcs-active.csv";
+            var latestfcsfile = "fcs-latest.csv";
+
+            var activefcs = new FcsExcelData().ReadFromFile($"{path}\\{activefcsfile}");
+            var latestfcs = new FcsExcelData().ReadFromFile($"{path}\\{latestfcsfile}");
+
+            var mainProvidersFromRoatp = _reportingClient.GetAllMainProvidersFromRoatp().ToList();
+            var mainProviders = _reportingClient.GetAllMainProviders().ToList();
+
+            var union = activefcs.Select(x => x.ukprn).Concat(latestfcs.Select(x => x.ukprn)).Concat(mainProvidersFromRoatp.Select(x => x.Ukprn)).OrderByDescending(x => x).Distinct();
+            List<string> message = new List<string>();
+            List<string> csvRows = new List<string>();
+            csvRows.Add($"Ukprn,IsMainProvider,IsinAciveFcsList,IsinLatestFcsList,ProviderAddedDate,ProviderName");
+            foreach (var provider in union)
+            {
+                bool isamainprovider = mainProvidersFromRoatp.Any(x => x.Ukprn == provider);
+                bool isinactivelist = activefcs.Any(x => x.ukprn == provider);
+                bool isinlatestlist = latestfcs.Any(x => x.ukprn == provider);
+                var provideraddeddate = isamainprovider ? $"{mainProvidersFromRoatp.SingleOrDefault(x => x.Ukprn == provider)?.StartDate?.ToString("dd/MM/yyyy")}" : string.Empty;
+                var providername = isamainprovider ? $"{mainProviders.SingleOrDefault(x => x.Ukprn == provider)?.ProviderName}" : string.Empty;
+
+                csvRows.Add(string.Format("{0},{1},{2},{3},{4},{5}",
+                    provider, isamainprovider ? "Yes" : "No", isinactivelist ? "Yes" : "No", isinlatestlist ? "Yes" : "No", provideraddeddate, providername));
+            }
+
+            Console.WriteLine(string.Join(Environment.NewLine, csvRows));
         }
     }
 }

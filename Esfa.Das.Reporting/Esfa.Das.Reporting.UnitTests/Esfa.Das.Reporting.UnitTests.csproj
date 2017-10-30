@@ -55,6 +55,10 @@
       <HintPath>..\packages\SFA.DAS.Apprenticeships.Api.Types.0.10.94\lib\net45\SFA.DAS.Apprenticeships.Api.Types.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="SFA.Roatp.Api.Types, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\SFA.Roatp.Api.Types.0.1.68\lib\net45\SFA.Roatp.Api.Types.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
   </ItemGroup>
   <Choose>

@@ -12,7 +12,7 @@ namespace Esfa.Das.Reporting.Client
         private ProviderReportingClient _providerReportingClient;
         private ApprenticeshipStandardReportingClient _apprenticeshipStandardReportingClient;
 
-        public ReportingClient(string baseUri = null, string cdUri = null) : base(baseUri, cdUri)
+        public ReportingClient(string baseUri = null, string cdUri = null,string roatpUri = null) : base(baseUri, cdUri, roatpUri)
         {
             _providerReportingClient = new ProviderReportingClient(apprenticeshipServiceUri, courceDirectoryUri);
             _apprenticeshipStandardReportingClient = new ApprenticeshipStandardReportingClient(apprenticeshipServiceUri, courceDirectoryUri);
@@ -22,6 +22,12 @@ namespace Esfa.Das.Reporting.Client
         {
             return _providerApiClient.FindAll().Where(x => x.IsEmployerProvider == false);
         }
+
+        public IEnumerable<SFA.Roatp.Api.Types.Provider> GetAllMainProvidersFromRoatp()
+        {
+            return _roatpApiClient.FindAll().Where(x => x.ProviderType == SFA.Roatp.Api.Types.ProviderType.MainProvider);
+        }
+
 
         public IEnumerable<ProviderLocations> GetAllMainProviderLocations()
         {

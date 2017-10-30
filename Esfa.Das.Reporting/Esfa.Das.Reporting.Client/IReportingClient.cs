@@ -15,6 +15,8 @@ namespace Esfa.Das.Reporting.Client
         /// <returns>a collection of Providers</returns>
         IEnumerable<ProviderSummary> GetAllMainProviders();
 
+        IEnumerable<SFA.Roatp.Api.Types.Provider> GetAllMainProvidersFromRoatp();
+
         IEnumerable<ProviderLocations> GetAllMainProviderLocations();
 
         void DownloadProviderDetails(List<int> providerUkprns);
