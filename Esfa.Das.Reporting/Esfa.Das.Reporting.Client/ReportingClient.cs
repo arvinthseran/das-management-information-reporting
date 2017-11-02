@@ -16,16 +16,17 @@ namespace Esfa.Das.Reporting.Client
         {
             _providerReportingClient = new ProviderReportingClient(apprenticeshipServiceUri, courceDirectoryUri);
             _apprenticeshipStandardReportingClient = new ApprenticeshipStandardReportingClient(apprenticeshipServiceUri, courceDirectoryUri);
+            
         }
 
         public IEnumerable<ProviderSummary> GetAllMainProviders()
         {
-            return _providerApiClient.FindAll().Where(x => x.IsEmployerProvider == false);
+            return providerApiClient.FindAll().Where(x => x.IsEmployerProvider == false);
         }
 
         public IEnumerable<SFA.Roatp.Api.Types.Provider> GetAllMainProvidersFromRoatp()
         {
-            return _roatpApiClient.FindAll().Where(x => x.ProviderType == SFA.Roatp.Api.Types.ProviderType.MainProvider);
+            return roatpApiClient.FindAll().Where(x => x.ProviderType == SFA.Roatp.Api.Types.ProviderType.MainProvider);
         }
 
 

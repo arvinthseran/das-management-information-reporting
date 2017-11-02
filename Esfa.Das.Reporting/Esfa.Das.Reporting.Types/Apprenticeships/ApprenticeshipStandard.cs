@@ -6,20 +6,25 @@ using System.Threading.Tasks;
 
 namespace Esfa.Das.Reporting.Types.Apprenticeship
 {
-    public class ApprenticeshipStandard
+    public class ApprenticeshipStandard : ApprenticeshipDetails
     {
-        public string Id { get; set; }
-
-        public string Title { get; set; }
-
         public string OverviewOfRole { get; set; }
     }
-    public class ApprenticeshipFramework
+    public class ApprenticeshipFramework : ApprenticeshipDetails
+    {
+        public DateTime? EndDate { get; set; }
+    }
+
+    public class ApprenticeshipDetails
     {
         public string Id { get; set; }
 
         public string Title { get; set; }
 
+        public int MaxFunding { get; set; }
+
         public int Duration { get; set; }
+
+        public int Level { get; set; }
     }
 }

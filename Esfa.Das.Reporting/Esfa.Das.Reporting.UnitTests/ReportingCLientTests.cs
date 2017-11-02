@@ -1,12 +1,8 @@
-﻿using System;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
+﻿using System;   
 using NUnit.Framework;
 using Esfa.Das.Reporting.Client;
-using Esfa.Das.Reporting.Types;
 using System.Linq;
 using System.Collections.Generic;
-using SFA.DAS.Apprenticeships.Api.Types.Providers;
 
 namespace Esfa.Das.Reporting.UnitTests
 {
@@ -14,6 +10,8 @@ namespace Esfa.Das.Reporting.UnitTests
     public class ReportingCLientTests
     {
         private ReportingClient _reportingClient;
+
+        private ReportingClient _preProdreportingClient;
 
 
         [OneTimeSetUp]
@@ -25,6 +23,111 @@ namespace Esfa.Das.Reporting.UnitTests
                  "https://dasapi.coursedirectoryproviderportal.org.uk/dasapi/bulk/providers", 
                  "https://roatp.apprenticeships.sfa.bis.gov.uk/api");
         }
+
+
+        [Test]
+        public void ShouldHaveSameFrameworkCodes()
+        {
+            var restApiClientforPP = new RestApiClient("");
+            var restApiClientforProd = new RestApiClient("http://das-prd-apprenticeshipinfoservice.cloudapp.net/");
+
+            var frameworkcodesinPP = restApiClientforPP.GetAllFrameworkCodes().Result.Select(x => restApiClientforPP.GetByFrameworkCode(x.FrameworkCode).Result).ToList();
+            var frameworkcodesinProd = restApiClientforProd.GetAllFrameworkCodes().Result.Select(x => restApiClientforProd.GetByFrameworkCode(x.FrameworkCode).Result).ToList();
+
+            Assert.Multiple(() =>
+            {
+                foreach (var frameworkcodeinPP in frameworkcodesinPP)
+                {
+                    var frameworkcodeinprod = frameworkcodesinProd.Single(x => x.FrameworkCode == frameworkcodeinPP.FrameworkCode);
+                    Assert.AreEqual(frameworkcodeinprod.Title, frameworkcodeinPP.Title, $"Framework Code Title looks different for {frameworkcodeinprod.FrameworkCode}");
+                    Assert.AreEqual(frameworkcodeinprod.Ssa1, frameworkcodeinPP.Ssa1, $"Framework Code SSA1 looks different for {frameworkcodeinprod.FrameworkCode}");
+                    Assert.AreEqual(frameworkcodeinprod.Ssa2, frameworkcodeinPP.Ssa2, $"Framework Code SSA2 looks different for {frameworkcodeinprod.FrameworkCode}");
+                }
+            });
+        }
+
+        private Func<IEnumerable<string>, IEnumerable<string>, List<string>> Comapare = (a, b) =>
+        {
+            return a.Except(b).ToList();
+        };
+
+        [Test]
+        public void ShouldHaveSameInformation()
+        {
+            
+            _preProdreportingClient = new ReportingClient(baseUri: "");
+            var standardsinPP = _preProdreportingClient.standardApiClient.FindAll().Where(x => x.IsPublished == true).Select(y => _preProdreportingClient.standardApiClient.Get(y.Id)).ToList();
+            var frameworksinPP = _preProdreportingClient.frameworkApiClient.FindAll().Select(y => _preProdreportingClient.frameworkApiClient.Get(y.Id)).ToList();
+
+            var standardsinProd = _reportingClient.standardApiClient.FindAll().Where(x => x.IsPublished == true).Select(y => _preProdreportingClient.standardApiClient.Get(y.Id)).ToList();
+            var frameworksinProd = _reportingClient.frameworkApiClient.FindAll().Select(y => _preProdreportingClient.frameworkApiClient.Get(y.Id)).ToList();
+
+            var frameworkmissinginProd = Comapare(frameworksinPP.Select(x => x.FrameworkId), frameworksinProd.Select(x => x.FrameworkId));
+            var frameworkmissinginPP = Comapare(frameworksinProd.Select(x => x.FrameworkId), frameworksinPP.Select(x => x.FrameworkId));
+
+            var standardmissinginProd = Comapare(standardsinPP.Select(x => x.StandardId), standardsinProd.Select(x => x.StandardId));
+            var standardmissinginPP = Comapare(standardsinProd.Select(x => x.StandardId), standardsinPP.Select(x => x.StandardId));
+
+                Assert.Multiple(() =>
+                {
+                    Assert.AreEqual(standardsinProd.Count, standardsinPP.Count, $"Standard counts mismatch");
+                    Assert.AreEqual(frameworksinProd.Count, frameworksinPP.Count, $"Framework counts mismatch");
+
+                    Assert.IsTrue(frameworkmissinginProd.Count == 0, $"Missing Frameworks in Prod " + string.Join(",", frameworkmissinginProd));
+                    Assert.IsTrue(frameworkmissinginPP.Count == 0, $"Missing Frameworks in PP " + string.Join(",", frameworkmissinginPP));
+    
+                    Assert.IsTrue(standardmissinginProd.Count == 0, $"Missing Standards in Prod " + string.Join(",", standardmissinginProd));
+                    Assert.IsTrue(standardmissinginPP.Count == 0, $"Missing Standards in PP " + string.Join(",", standardmissinginPP));
+                });
+
+                foreach (var standardinPP in standardsinPP)
+                {
+                    var standardinprod = standardsinProd.Single(x => x.StandardId == standardinPP.StandardId);
+                    Assert.AreEqual(standardinprod.Title, standardinPP.Title, $"Standard level looks different for {standardinprod.StandardId}");
+                    Assert.AreEqual(standardinprod.Duration, standardinPP.Duration, $"Standard Duration looks different for {standardinprod.StandardId}");
+                    Assert.AreEqual(standardinprod.IsPublished, standardinPP.IsPublished, $"Standard IsPublished looks different for {standardinprod.StandardId}");
+                    Assert.AreEqual(standardinprod.Level, standardinPP.Level, $"Standard Level looks different for {standardinprod.StandardId}");
+                    Assert.AreEqual(standardinprod.MaxFunding, standardinPP.MaxFunding, $"Standard MaxFunding looks different for {standardinprod.StandardId}");
+                    Assert.AreEqual(standardinprod.Ssa1, standardinPP.Ssa1, $"Standard Ssa1 looks different for {standardinprod.StandardId}");
+                    Assert.AreEqual(standardinprod.Ssa2, standardinPP.Ssa2, $"Standard Ssa2 looks different for {standardinprod.StandardId}");
+                    Assert.AreEqual(standardinprod.AssessmentPlanPdf, standardinPP.AssessmentPlanPdf, $"Standard AssessmentPlanPdf looks different for {standardinprod.StandardId}");
+                    Assert.AreEqual(standardinprod.EntryRequirements, standardinPP.EntryRequirements, $"Standard EntryRequirements looks different for {standardinprod.StandardId}");
+                    Assert.AreEqual(standardinprod.IntroductoryText, standardinPP.IntroductoryText, $"Standard IntroductoryText looks different for {standardinprod.StandardId}");
+                    Assert.AreEqual(standardinprod.JobRoles, standardinPP.JobRoles, $"Standard JobRoles looks different for {standardinprod.StandardId}");
+                    Assert.AreEqual(standardinprod.Keywords, standardinPP.Keywords, $"Standard Keywords looks different for {standardinprod.StandardId}");
+                    Assert.AreEqual(standardinprod.OverviewOfRole, standardinPP.OverviewOfRole, $"Standard OverviewOfRole looks different for {standardinprod.StandardId}");
+                    Assert.AreEqual(standardinprod.ProfessionalRegistration, standardinPP.ProfessionalRegistration, $"Standard ProfessionalRegistration looks different for {standardinprod.StandardId}");
+                    Assert.AreEqual(standardinprod.Qualifications, standardinPP.Qualifications, $"Standard Qualifications looks different for {standardinprod.StandardId}");
+                    Assert.AreEqual(standardinprod.StandardPdf, standardinPP.StandardPdf, $"Standard StandardPdf looks different for {standardinprod.StandardId}");
+                    Assert.AreEqual(standardinprod.WhatApprenticesWillLearn, standardinPP.WhatApprenticesWillLearn, $"Standard WhatApprenticesWillLearn looks different for {standardinprod.StandardId}");
+                }
+
+                foreach (var frameworkinPP in frameworksinPP)
+                {
+                    var frameworkinProd = frameworksinProd.Single(x => x.FrameworkId == frameworkinPP.FrameworkId);
+                    Assert.AreEqual(frameworkinProd.Title, frameworkinPP.Title, $"Framework level looks different for {frameworkinProd.FrameworkId}");
+                    Assert.AreEqual(frameworkinProd.FrameworkCode, frameworkinPP.FrameworkCode, $"Framework FrameworkCode looks different for {frameworkinProd.FrameworkId}");
+                    Assert.AreEqual(frameworkinProd.FrameworkName, frameworkinPP.FrameworkName, $"Framework FrameworkName looks different for {frameworkinProd.FrameworkId}");
+                    Assert.AreEqual(frameworkinProd.Level, frameworkinPP.Level, $"Framework Level looks different for {frameworkinProd.FrameworkId}");
+                    Assert.AreEqual(frameworkinProd.PathwayCode, frameworkinPP.PathwayCode, $"Framework PathwayCode looks different for {frameworkinProd.FrameworkId}");
+                    Assert.AreEqual(frameworkinProd.PathwayName, frameworkinPP.PathwayName, $"Framework PathwayName looks different for {frameworkinProd.FrameworkId}");
+                    Assert.AreEqual(frameworkinProd.ProgType, frameworkinPP.ProgType, $"Framework ProgType looks different for {frameworkinProd.FrameworkId}");
+                    Assert.AreEqual(frameworkinProd.Ssa1, frameworkinPP.Ssa1, $"Framework Ssa1 looks different for {frameworkinProd.FrameworkId}");
+                    Assert.AreEqual(frameworkinProd.Ssa2, frameworkinPP.Ssa2, $"Framework Ssa2 looks different for {frameworkinProd.FrameworkId}");
+                    Assert.AreEqual(frameworkinProd.CombinedQualification, frameworkinPP.CombinedQualification, $"Framework CombinedQualification looks different for {frameworkinProd.FrameworkId}");
+                    Assert.AreEqual(frameworkinProd.CompetencyQualification, frameworkinPP.CompetencyQualification, $"Framework CompetencyQualification looks different for {frameworkinProd.FrameworkId}");
+                    Assert.AreEqual(frameworkinProd.CompletionQualifications, frameworkinPP.CompletionQualifications, $"Framework CompletionQualifications looks different for {frameworkinProd.FrameworkId}");
+                    Assert.AreEqual(frameworkinProd.EntryRequirements, frameworkinPP.EntryRequirements, $"Framework EntryRequirements looks different for {frameworkinProd.FrameworkId}");
+                    Assert.AreEqual(frameworkinProd.ExpiryDate, frameworkinPP.ExpiryDate, $"Framework ExpiryDate looks different for {frameworkinProd.FrameworkId}");
+                    Assert.AreEqual(frameworkinProd.FrameworkOverview, frameworkinPP.FrameworkOverview, $"Framework FrameworkOverview looks different for {frameworkinProd.FrameworkId}");
+                    Assert.AreEqual(frameworkinProd.KnowledgeQualification, frameworkinPP.KnowledgeQualification, $"Framework KnowledgeQualification looks different for {frameworkinProd.FrameworkId}");
+                    Assert.AreEqual(frameworkinProd.ProfessionalRegistration, frameworkinPP.ProfessionalRegistration, $"Framework ProfessionalRegistration looks different for {frameworkinProd.FrameworkId}");
+                    var ProdRole = frameworkinProd.JobRoleItems.Select(x => $"{x.Title}-{x.Description}");
+                    var PpRole = frameworkinPP.JobRoleItems.Select(x => $"{x.Title}-{x.Description}");
+                    Assert.AreEqual(ProdRole, PpRole, $"Framework JobRoleItems looks different for {frameworkinProd.FrameworkId}");
+            }
+        }
+
 
         [Test]
         public void ShouldGetAllMainProvidersWithLocations()
@@ -77,22 +180,19 @@ namespace Esfa.Das.Reporting.UnitTests
         }
 
         [Test]
-        public void ShouldNothave0durationFramework()
+        public void ShouldNothave0duration()
         {
-            var frameworks = _reportingClient.GetAllApprenticeshipFrameworks();
-
-            Assert.AreEqual(0, frameworks.Where(x => x.Duration == 0), string.Join(Environment.NewLine, frameworks.Where(x => x.Duration == 0).Select(y => $"{y.Id}")));
-
+            _preProdreportingClient = new ReportingClient(baseUri: "");
+            var frameworks = _preProdreportingClient.GetAllApprenticeshipFrameworks();
+            var standards = _preProdreportingClient.GetAllApprenticeshipStandards();
+            Assert.Multiple(() =>
+            {
+                Assert.AreEqual(0, frameworks.Where(x => x.Duration == 0).Count(), string.Join(Environment.NewLine, frameworks.Where(x => x.Duration == 0).Select(y => $"{y.Id} has 0 duration")));
+                Assert.AreEqual(0, frameworks.Where(x => x.MaxFunding == 0).Count(), string.Join(Environment.NewLine, frameworks.Where(x => x.MaxFunding == 0).Select(y => $"{y.Id} has 0 funding")));
+                Assert.AreEqual(0, standards.Where(x => x.Duration == 0).Count(), string.Join(Environment.NewLine, standards.Where(x => x.Duration == 0).Select(y => $"{y.Id} has 0 duration")));
+                Assert.AreEqual(0, standards.Where(x => x.MaxFunding == 0).Count(), string.Join(Environment.NewLine, standards.Where(x => x.MaxFunding == 0).Select(y => $"{y.Id} has 0 funding")));
+            });
         }
-
-        [Test]
-        public void ShouldGetApprenticeshipStandardsTitle()
-        {
-            var message = _reportingClient.GetAllApprenticeshipStandards().Select(y => $"{y.Title}");
-
-            Console.WriteLine(string.Join(Environment.NewLine, message));
-        }
-
 
         [Test]
         public void ShouldGetAProviderfromCD()
@@ -142,3 +242,4 @@ namespace Esfa.Das.Reporting.UnitTests
         }
     }
 }
+

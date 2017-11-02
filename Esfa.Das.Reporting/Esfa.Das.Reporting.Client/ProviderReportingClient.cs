@@ -57,10 +57,10 @@ namespace Esfa.Das.Reporting.Client
             List<ProviderLocations> providerlocations = new List<ProviderLocations>();
 
             dynamic providers = GetProvidersFromCourseDirectory();
-            _frameworksfromApi = _frameworkApiClient.FindAll();
-            _standardsfromApi = _standardApiClient.FindAll();
+            _frameworksfromApi = frameworkApiClient.FindAll();
+            _standardsfromApi = standardApiClient.FindAll();
             _inspectionOutcomes = _inspectionOutcomeClient.GetOfstedInspectionOutcomes().InspectionOutcomes;
-            var providersfromApi = _providerApiClient.FindAll().ToList();
+            var providersfromApi = providerApiClient.FindAll().ToList();
 
             foreach (var provider in providers)
             {
@@ -208,8 +208,8 @@ namespace Esfa.Das.Reporting.Client
         {
             // to verify
             var providersukprnfromApi = providers.Select(x => int.Parse(x.Ukprn.ToString())).ToList();
-            var frameworksidsfromApi = _frameworkApiClient.FindAll().Select(x => x.Id);
-            var standardsidsfromApi = _standardApiClient.FindAll().Select(x => x.Id);
+            var frameworksidsfromApi = frameworkApiClient.FindAll().Select(x => x.Id);
+            var standardsidsfromApi = standardApiClient.FindAll().Select(x => x.Id);
 
             var providersukprn = providerlocations.Select(x => x.Ukprn).Distinct();
             var providersFrameworks = providerlocations.SelectMany(x => x.Frameworks.Select(y => y.ApprenticeshipId)).Distinct();

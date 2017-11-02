@@ -14,18 +14,31 @@ namespace Esfa.Das.Reporting.Client
         public IEnumerable<ApprenticeshipStandard> GetAllApprenticeshipStandards()
         {
             var appStandards = new List<ApprenticeshipStandard>();
-            var standards = _standardApiClient.FindAll().Where(x => x.IsPublished == true);
+            var standards = standardApiClient.FindAll().Where(x => x.IsPublished == true);
             foreach (var standardcode in standards.Select(x => x.Id))
             {
-                var standard = _standardApiClient.Get(standardcode);
-                appStandards.Add(new ApprenticeshipStandard { Id = standardcode, Title = standard.Title, OverviewOfRole = standard.OverviewOfRole });
+                var s = standardApiClient.Get(standardcode);
+                appStandards.Add(new ApprenticeshipStandard
+                {
+                    Id = standardcode, Title = s.Title, OverviewOfRole = s.OverviewOfRole, Duration = s.Duration, MaxFunding = s.MaxFunding, Level = s.Level
+                });
             }
             return appStandards;
         }
 
         public IEnumerable<ApprenticeshipFramework> GetAllApprenticeshipFrameworks()
         {
-            return _frameworkApiClient.FindAll().Select(x => new ApprenticeshipFramework {Id = x.Id, Title = x.Title, Duration = x.Duration });
+            var appFrameworks = new List<ApprenticeshipFramework>();
+            var frameworks = frameworkApiClient.FindAll();
+            foreach (var frameworkid in frameworks.Select(x => x.Id))
+            {
+                var f = frameworkApiClient.Get(frameworkid);
+                appFrameworks.Add(new ApprenticeshipFramework
+                {
+                    Id = f.FrameworkId, Title = f.Title, Duration = f.Duration, MaxFunding = f.MaxFunding, EndDate = f.ExpiryDate, Level = f.Level
+                });
+            }
+            return appFrameworks;
         }
     }
 }

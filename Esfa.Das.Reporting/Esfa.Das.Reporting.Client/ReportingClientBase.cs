@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using SFA.DAS.Apprenticeships.Api.Client;
+﻿extern alias local;
+using local::SFA.DAS.Apprenticeships.Api.Client;
 using SFA.DAS.Providers.Api.Client;
 using SFA.DAS.AssessmentOrgs.Api.Client;
 using Newtonsoft.Json;
@@ -14,11 +14,6 @@ namespace Esfa.Das.Reporting.Client
         public readonly string apprenticeshipServiceUri;
         public readonly string roatpServiceUri;
         public readonly string courceDirectoryUri;
-
-
-        protected ProviderApiClient _providerApiClient;
-        protected FrameworkApiClient _frameworkApiClient;
-        protected StandardApiClient _standardApiClient;
         
         protected AssessmentOrgsApiClient _assessmentOrgsApiClient;
         protected OfstedInspectionsClient _inspectionOutcomeClient;
@@ -28,9 +23,6 @@ namespace Esfa.Das.Reporting.Client
             apprenticeshipServiceUri = appUri;
             courceDirectoryUri = cdUri;
             roatpServiceUri = roatpUri;
-            _providerApiClient = new ProviderApiClient(apprenticeshipServiceUri);
-            _frameworkApiClient = new FrameworkApiClient(apprenticeshipServiceUri);
-            _standardApiClient = new StandardApiClient(apprenticeshipServiceUri);
             _assessmentOrgsApiClient = new AssessmentOrgsApiClient(apprenticeshipServiceUri);
             _inspectionOutcomeClient = new OfstedInspectionsClient();
         }
@@ -41,6 +33,9 @@ namespace Esfa.Das.Reporting.Client
             NullValueHandling = NullValueHandling.Ignore
         };
 
-        protected RoatpApiClient _roatpApiClient =>  new RoatpApiClient(roatpServiceUri);
+        public RoatpApiClient roatpApiClient =>  new RoatpApiClient(roatpServiceUri);
+        public ProviderApiClient providerApiClient => new ProviderApiClient(apprenticeshipServiceUri);
+        public FrameworkApiClient frameworkApiClient => new FrameworkApiClient(apprenticeshipServiceUri);
+        public StandardApiClient standardApiClient => new StandardApiClient(apprenticeshipServiceUri);
     }
 }
